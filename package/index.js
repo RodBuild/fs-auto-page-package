@@ -1,13 +1,8 @@
-// function isTest(string) {
-//   return string.toLowerCase === 'test';
-// }
-// module.exports = isTest;
-
 /**
  * main page object containing all methods, selectors and functionality
  * that is shared across all page objects
  */
-class Page {
+export default class Page {
   /**
    * Opens a sub page of the page
    * @param path path of the sub page (e.g. /path/to/page.html)
@@ -26,13 +21,61 @@ class Page {
       await (await $('[id="pass"]')).setValue(password);
       await (await $('[name="login"]')).click();
     } else {
-      await console.log('Skipped logging-in');
+      await console.log('Skipped Facebook logging-in');
     }
     // await (await $('[id="email"]')).setValue(username);
     // await (await $('[id="pass"]')).setValue(password);
     // await (await $('input[name="login"]')).click();
     // await (await $$('[id="email"]')[0]).setValue(username);
     // await (await $$('[id="pass"]')[0]).setValue(password);
+  }
+  static async logintwitter(username, password) {
+    await this.switchwindowfilter('twitter.com');
+    await browser.pause(1200);
+    const title = await browser.getTitle();
+    // await console.log('main: ' + title);
+    // Check if user is already logged in
+    // IF title == 'Twitter' we need to login
+    if (title === 'Twitter') {
+      // 1. Find and click LOGIN button
+      await browser.waitUntil(
+        async function () {
+          return await (await $('[data-testid="sheetDialog"]')).isExisting();
+        },
+        { timeoutMsg: 'Twitter: Login button was not found' }
+      );
+      await await $$('[role="button"]')[1].click();
+
+      // 2. Fill first input box, USERNAME
+      await browser.waitUntil(
+        async function () {
+          return await (await $$('input')[0]).isExisting();
+        },
+        { timeoutMsg: 'Twitter: Username box was not found' }
+      );
+      await (await $$('input')[0]).setValue(username);
+
+      // 3. Find and click NEXT button
+      await (await $$('[role="button"]')[2]).click();
+
+      // 4. Fill second input box, PASSWORD
+      await browser.waitUntil(
+        async function () {
+          return await (await $$('input')[1]).isExisting();
+        },
+        {
+          timeoutMsg: 'Twitter: Password box was not found',
+        }
+      );
+      await (await $$('input')[1]).setValue(password);
+
+      // 5. Find and click last LOGIN button
+      await (await $$('[role="button"]')[3]).click();
+    }
+    // Else, title is 'Home/Twitter'
+    else {
+      await console.log('Skipped Twitter logging-in');
+    }
   }
   static async login(username, password) {
     await (await $('[id="userName"]')).setValue(username);
@@ -133,9 +176,7 @@ class Page {
    * @returns array[] with all available languages in FamilySearch
    */
   static async getlanguages() {
-    await $(
-      '#app-content-scroller > div > div > div > div > div.shadowCss_s1a4lfa8.elevationBaseCss_e1vn31hu.e0_e1gfhbk9 > header > div:nth-child(2) > div > button:nth-child(2)'
-    ).click();
+    await $$('header > div:nth-child(2) button')[0].click();
     await browser.pause(1000);
     let lang = [];
     let arr = await $$('input[name="locale"]');
@@ -143,9 +184,7 @@ class Page {
     for (let i = 0; i < arr.length; i++) {
       await lang.push(await arr[i].getAttribute('value'));
     }
-    await $(
-      '#root > div > div > div > div.portalsCss_p1pr4d40 > div:nth-child(1) > div > div.stackingCss_srblytt > div > div > div > div > div > div > div > div > div.marginBoxCss_mzynpwk > div > div > div > div:nth-child(1) > button'
-    ).click();
+    await $$('div[portal=overlays] div[data-size=md] > div:nth-child(4) button')[0].click();
     return lang;
   }
   /**
@@ -153,20 +192,13 @@ class Page {
    * @param lang language based on two characters. Ex: en-english, it-italian
    */
   static async changelanguage(lang = 'en') {
-    await $(
-      '#app-content-scroller > div > div > div > div > div.shadowCss_s1a4lfa8.elevationBaseCss_e1vn31hu.e0_e1gfhbk9 > header > div:nth-child(2) > div > button:nth-child(2)'
-    ).click();
     // await browser.debug();
-    await browser.pause(2000);
+    await $$('header > div:nth-child(2) button')[0].click();
+    await browser.pause(1000);
     await $(`[name="locale"][value="${lang}"]`).click();
-    await $(
-      '#root > div > div > div > div.portalsCss_p1pr4d40 > div:nth-child(1) > div > div.stackingCss_srblytt > div > div > div > div > div > div > div > div > div.marginBoxCss_mzynpwk > div > div > div > div:nth-child(2) > button'
-    ).click();
+    await $$('div[portal=overlays] div[data-size=md] > div:nth-child(4) button')[1].click();
   }
   static async test() {
-    // return await $('[class="text"');
-    await console.log('This is a test :)');
+    return await $('[class="text"');
   }
 }
-
-module.exports = Page;
